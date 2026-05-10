@@ -1,0 +1,230 @@
+# ==========================================
+# HEALTHCARE DATA CLEANING & REPORTING AUTOMATION
+# ==========================================
+
+# Import Libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Upload Dataset
+from google.colab import files
+uploaded = files.upload()
+
+# Read CSV File
+file_name = next(iter(uploaded))
+df = pd.read_csv(file_name)
+
+# ==========================================
+# BASIC DATA INFORMATION
+# ==========================================
+
+print("===================================")
+print("FIRST 5 ROWS")
+print("===================================")
+print(df.head())
+
+print("\n===================================")
+print("DATASET SHAPE")
+print("===================================")
+print(df.shape)
+
+print("\n===================================")
+print("COLUMN NAMES")
+print("===================================")
+print(df.columns)
+
+print("\n===================================")
+print("MISSING VALUES")
+print("===================================")
+print(df.isnull().sum())
+
+print("\n===================================")
+print("DUPLICATE ROWS")
+print("===================================")
+print(df.duplicated().sum())
+
+# ==========================================
+# DATA CLEANING
+# ==========================================
+
+print("\n===================================")
+print("DATA CLEANING STARTED")
+print("===================================")
+
+# Remove duplicate rows
+df = df.drop_duplicates()
+
+# Separate numeric and categorical columns
+numeric_cols = df.select_dtypes(include=np.number).columns
+categorical_cols = df.select_dtypes(include='object').columns
+
+# Fill missing numeric values using median
+for col in numeric_cols:
+    df[col].fillna(df[col].median(), inplace=True)
+
+# Fill missing categorical values using mode
+for col in categorical_cols:
+    df[col].fillna(df[col].mode()[0], inplace=True)
+
+# Remove extra spaces from text columns
+for col in categorical_cols:
+    df[col] = df[col].astype(str).str.strip()
+
+# Convert column names to lowercase
+df.columns = df.columns.str.lower().str.replace(" ", "_")
+
+print("\nData Cleaning Completed Successfully!")
+
+# ==========================================
+# SUMMARY REPORT
+# ==========================================
+
+print("\n===================================")
+print("SUMMARY STATISTICS")
+print("===================================")
+
+print(df.describe())
+
+# ==========================================
+# VISUALIZATIONS
+# ==========================================
+
+# Set style
+sns.set(style="whitegrid")
+
+# ==========================================
+# HISTOGRAMS
+# ==========================================
+
+print("\nGenerating Histograms...")
+
+df.hist(figsize=(14,10))
+plt.suptitle("Histogram of Numerical Columns", fontsize=16)
+plt.show()
+
+# ==========================================
+# CORRELATION HEATMAP
+# ==========================================
+
+print("\nGenerating Correlation Heatmap...")
+
+plt.figure(figsize=(12,6))
+sns.heatmap(df.corr(numeric_only=True),
+            annot=True,
+            cmap='coolwarm',
+            linewidths=0.5)
+
+plt.title("Correlation Heatmap")
+plt.show()
+
+# ==========================================
+# MISSING VALUES CHART
+# ==========================================
+
+print("\nGenerating Missing Values Chart...")
+
+missing = df.isnull().sum()
+
+plt.figure(figsize=(10,5))
+missing.plot(kind='bar')
+
+plt.title("Missing Values After Cleaning")
+plt.xlabel("Columns")
+plt.ylabel("Count")
+
+plt.show()
+
+# ==========================================
+# HEALTHCARE ANALYSIS
+# ==========================================
+
+# AGE DISTRIBUTION
+if 'age' in df.columns:
+
+    print("\nGenerating Age Distribution Chart...")
+
+    plt.figure(figsize=(8,5))
+
+    sns.histplot(df['age'],
+                 bins=20,
+                 kde=True)
+
+    plt.title("Age Distribution")
+    plt.xlabel("Age")
+    plt.ylabel("Count")
+
+    plt.show()
+
+# GENDER DISTRIBUTION
+if 'gender' in df.columns:
+
+    print("\nGenerating Gender Distribution Chart...")
+
+    plt.figure(figsize=(6,4))
+
+    sns.countplot(x=df['gender'])
+
+    plt.title("Gender Distribution")
+    plt.xlabel("Gender")
+    plt.ylabel("Count")
+
+    plt.show()
+
+# MEDICAL CONDITION ANALYSIS
+if 'medical_condition' in df.columns:
+
+    print("\nGenerating Medical Condition Chart...")
+
+    plt.figure(figsize=(10,5))
+
+    df['medical_condition'].value_counts().plot(
+        kind='bar'
+    )
+
+    plt.title("Medical Condition Distribution")
+    plt.xlabel("Medical Condition")
+    plt.ylabel("Count")
+
+    plt.show()
+
+# BLOOD TYPE ANALYSIS
+if 'blood_type' in df.columns:
+
+    print("\nGenerating Blood Type Chart...")
+
+    plt.figure(figsize=(8,5))
+
+    sns.countplot(x=df['blood_type'])
+
+    plt.title("Blood Group Distribution")
+    plt.xlabel("Blood Type")
+    plt.ylabel("Count")
+
+    plt.show()
+
+# ==========================================
+# EXPORT CLEANED DATASET
+# ==========================================
+
+cleaned_file = "cleaned_healthcare_dataset.csv"
+
+df.to_csv(cleaned_file, index=False)
+
+print("\n===================================")
+print("CLEANED DATASET SAVED SUCCESSFULLY")
+print("===================================")
+
+print(f"File Name: {cleaned_file}")
+
+# Download cleaned dataset
+files.download(cleaned_file)
+
+# ==========================================
+# PROJECT COMPLETED
+# ==========================================
+
+print("\n===================================")
+print("PROJECT COMPLETED SUCCESSFULLY!")
+print("===================================")
